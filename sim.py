@@ -9,7 +9,7 @@ class dynamicKidney():
 		self.c = 1
 		self.rho = 0.05
 		self.max_time = 1. 
-		self.lam = 100
+		self.lam = 10000
 		self.elements = ['A', 'AB', 'B', 'O']
 		self.freqs = np.array([224806., 26036., 98893., 329133.])
 		self.probs = probs = self.freqs / sum(self.freqs)
@@ -58,14 +58,14 @@ class dynamicKidney():
 				if r_unif < self.p_c:
 					self.matches += 2
 					self.matches_dict[self.t] = self.matches
-		print self.matches,self.matches_dict
+		print self.matches
 		return (self.matches, self.matches_dict)
 	
 	def maximal_matching(self, pair):
 		## TODO 
 		return 2
 	## paper assumes BA is the relevant state variable
-	def multi_way_sim(self):
+	def mult_way_sim(self):
 		self.init_params()
 		while (self.t < self.max_time):
 			i_t = random.expovariate(self.lam)
@@ -115,13 +115,35 @@ class dynamicKidney():
 						else: 
 							self.matches += 2
 						self.matches_dict[self.t] = self.matches
-					## compare with threshold to decide whether to use AB pair (always use BA)
+					# matching B-O, O-B (O-A), A-B
+					if types == ['B', 'O']:
+						if self.state_BA < 0:
+							self.matches += 3
+							self.state_BA += 1
+						else:
+							self.matches += 2
+						self.matches_dict[self.t] = self.matches
+					# matching A-O, O-A (O-B), B-A
+					if types == ['A', 'O']:
+						if self.state_BA > self.mult_thresh:
+							self.matches += 3
+							self.state_BA -= 1
+						else:
+							self.matches += 2
+						self.matches_dict[self.t] = self.matches
+		print self.matches
+		return (self.matches, self.matches_dict)		
 
 
 mySim = dynamicKidney()
 (matches_2, matches_dict_2) = mySim.two_way_sim()
 surplus_2 = mySim.calc_surplus()
 print(surplus_2)
+
+(matches_mult, matches_dict_mult) = mySim.mult_way_sim()
+surplus_mult = mySim.calc_surplus()
+print surplus_mult
+
 
 			
 
