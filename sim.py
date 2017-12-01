@@ -15,7 +15,7 @@ class dynamicKidney():
 		self.probs = probs = self.freqs / sum(self.freqs)
 		self.od_pairs = [['AB','B'],['A','O'],['B','O'],['AB','O'],['AB','A']]
 		self.p_c = 0.11 # tissue incompatibility probability
-		self.mult_thresh = 2
+		self.mult_thresh = 25
 
 	def init_params(self):
 		self.t = 0
@@ -58,7 +58,7 @@ class dynamicKidney():
 				if r_unif < self.p_c:
 					self.matches += 2
 					self.matches_dict[self.t] = self.matches
-		print self.matches
+		# print self.matches
 		return (self.matches, self.matches_dict)
 	
 	def maximal_matching(self, pair):
@@ -131,19 +131,21 @@ class dynamicKidney():
 						else:
 							self.matches += 2
 						self.matches_dict[self.t] = self.matches
-		print self.matches
+		# print self.matches
 		return (self.matches, self.matches_dict)		
 
 
 mySim = dynamicKidney()
-(matches_2, matches_dict_2) = mySim.two_way_sim()
-surplus_2 = mySim.calc_surplus()
-print(surplus_2)
+num_trials = 50
+trials_surplus = []
+# for i in xrange(num_trials):
+# 	(matches_2, matches_dict_2) = mySim.two_way_sim()
+# 	trials_surplus.append(mySim.calc_surplus())
+# print np.mean(trials_surplus)
+# print np.var(trials_surplus)
 
-(matches_mult, matches_dict_mult) = mySim.mult_way_sim()
-surplus_mult = mySim.calc_surplus()
-print surplus_mult
-
-
-			
-
+for i in xrange(num_trials):
+	(matches_2, matches_dict_2) = mySim.mult_way_sim()
+	trials_surplus.append(mySim.calc_surplus())
+print np.mean(trials_surplus)
+print np.var(trials_surplus)		
