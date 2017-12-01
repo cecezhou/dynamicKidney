@@ -1,11 +1,14 @@
+from __future__ import print_function
+
 import random
 import math
 import numpy as np
+import sys
 
 
 class dynamicKidney():
 
-	def __init__(self):
+	def __init__(self, thresh = 2, perturb = 0.1):
 		self.c = 1
 		self.rho = 0.05
 		self.max_time = 1. 
@@ -15,7 +18,8 @@ class dynamicKidney():
 		self.probs = probs = self.freqs / sum(self.freqs)
 		self.od_pairs = [['AB','B'],['A','O'],['B','O'],['AB','O'],['AB','A']]
 		self.p_c = 0.11 # tissue incompatibility probability
-		self.mult_thresh = 2
+		self.mult_thresh = thresh
+		self.perturb = perturb
 
 	def init_params(self):
 		self.t = 0
@@ -35,12 +39,23 @@ class dynamicKidney():
 			surplus += (self.c * (self.matches_dict[L] / self.rho) * (np.exp(-1 * self.rho * L) - np.exp(-1 * self.rho * U)))
 		return surplus
 	
+	def flip_types(self, types):
+		return types
+				# sometimes switch to AB if we get BA
+		if (types == ['B', 'A']):	
+			r_unif = np.random.uniform(0., 1.)
+			if r_unif < self.perturb:
+				types = ['A', 'B']
+		return types
+
 	def two_way_sim(self):
 		self.init_params()
 		while (self.t < self.max_time):
 			i_t = random.expovariate(self.lam)
 			self.t += i_t
 			types = list(np.random.choice(self.elements, 2, replace=False, p=self.probs))
+			types = self.flip_types(types)
+
 			patient_type = types[0]
 			donor_type = types[1]
 			if (types == ['B', 'A']):
@@ -58,7 +73,7 @@ class dynamicKidney():
 				if r_unif < self.p_c:
 					self.matches += 2
 					self.matches_dict[self.t] = self.matches
-		print self.matches
+		# print self.matches
 		return (self.matches, self.matches_dict)
 	
 	def maximal_matching(self, pair):
@@ -71,6 +86,7 @@ class dynamicKidney():
 			i_t = random.expovariate(self.lam)
 			self.t += i_t
 			types = list(np.random.choice(self.elements, 2, replace=False, p=self.probs))
+			types = self.flip_types(types)
 			patient_type = types[0]
 			donor_type = types[1]
 			if (types == ['B', 'A']):
@@ -131,19 +147,37 @@ class dynamicKidney():
 						else:
 							self.matches += 2
 						self.matches_dict[self.t] = self.matches
-		print self.matches
+		# print self.matches
 		return (self.matches, self.matches_dict)		
 
 
+
 mySim = dynamicKidney()
-(matches_2, matches_dict_2) = mySim.two_way_sim()
-surplus_2 = mySim.calc_surplus()
-print(surplus_2)
+n = 50
+# n = 10
+# for _ in range(n):
+# 	avg_surplus = 0
+# 	(matches_mult, matches_dict_mult) = mySim.mult_way_sim()
+# 	surplus_mult = mySim.calc_surplus()
+# 	avg_surplus += surplus_mult
+# print(avg_surplus/n)
+for perturb in [0.0, 0.05, 0.1, 0.15]:
+	mySim.perturb = perturb
+	print("Perturb", perturb)
+	for thresh in [(perturb * 100 + 1) * x for x in range(15)]:
+		mySim.mult_thresh = thresh
+		avg_surplus = 0
+		for _ in range(n):
+			# print(".", end = "")
+			# ys.stdout.flush()
+			(matches_mult, matches_dict_mult) = mySim.mult_way_sim()
+			surplus_mult = mySim.calc_surplus()
+			avg_surplus += surplus_mult
+		print("Threshold: ", thresh, ", Surplus:", avg_surplus/n)
 
-(matches_mult, matches_dict_mult) = mySim.mult_way_sim()
-surplus_mult = mySim.calc_surplus()
-print surplus_mult
-
+# mySim = dynamicKidney(thresh = 2, perturb = 0.05)
+# (matches_2, matches_dict_2) = mySim.two_way_sim()
+# surplus_2 = mySim.calc_surplus()
 
 			
 
