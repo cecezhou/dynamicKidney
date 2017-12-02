@@ -51,7 +51,7 @@ class dynamicKidney():
         while (self.t < self.max_time):
             i_t = random.expovariate(self.lam)
             self.t += i_t
-            types = list(np.random.choice(self.elements, 2, replace=False, p=self.probs))
+            types = list(np.random.choice(self.elements, 2, replace=True, p=self.probs))
             patient_type = types[0]
             donor_type = types[1]
             if (types == ['B', 'A']):
@@ -139,24 +139,27 @@ class dynamicKidney():
                             self.update_matches(2)
         return (self.matches, self.matches_dict, self.cum_matches_dict)
 
-n_sims = 100
-surpluses_2 = []
-surpluses_2_random_mc = []
-surpluses_mult = []
-surpluses_mult_random_mc = []
-for sim in range(n_sims):
-    print 'Simulation', sim
-    mySim = dynamicKidney(lam=10000, sigma2=4)
-    (matches_2, matches_dict_2, cum_matches_dict_2) = mySim.two_way_sim()
-    surpluses_2.append(mySim.calc_surplus())
-    surpluses_2_random_mc.append(mySim.calc_surplus_random_mc())
-    (matches_mult, matches_dict_mult, cum_matches_dict_mult) = mySim.mult_way_sim()
-    surpluses_mult.append(mySim.calc_surplus())
-    surpluses_mult_random_mc.append(mySim.calc_surplus_random_mc())
-print 'Two way regular mean, stdev:', np.mean(surpluses_2), np.std(surpluses_2)
-print 'Two way random MC mean, stdev:', np.mean(surpluses_2_random_mc), np.std(surpluses_2_random_mc)
-print 'Multi-way regular mean, stdev:', np.mean(surpluses_mult), np.std(surpluses_mult)
-print 'Multi-way random MC mean, stdev:', np.mean(surpluses_mult_random_mc), np.std(surpluses_mult_random_mc)
+for var in [0.000001]:
+    n_sims = 1
+    surpluses_2 = []
+    surpluses_2_random_mc = []
+    surpluses_mult = []
+    surpluses_mult_random_mc = []
+    for sim in range(n_sims):
+        if (sim % 10 == 0):
+            print 'Simulation', sim
+        mySim = dynamicKidney(lam=10000, sigma2=var)
+        (matches_2, matches_dict_2, cum_matches_dict_2) = mySim.two_way_sim()
+        surpluses_2.append(mySim.calc_surplus())
+        surpluses_2_random_mc.append(mySim.calc_surplus_random_mc())
+        (matches_mult, matches_dict_mult, cum_matches_dict_mult) = mySim.mult_way_sim()
+        surpluses_mult.append(mySim.calc_surplus())
+        surpluses_mult_random_mc.append(mySim.calc_surplus_random_mc())
+    print 'Var =', var
+    print 'Two way regular mean, stdev:', np.mean(surpluses_2), np.std(surpluses_2)
+    print 'Two way random MC mean, stdev:', np.mean(surpluses_2_random_mc), np.std(surpluses_2_random_mc)
+    print 'Multi-way regular mean, stdev:', np.mean(surpluses_mult), np.std(surpluses_mult)
+    print 'Multi-way random MC mean, stdev:', np.mean(surpluses_mult_random_mc), np.std(surpluses_mult_random_mc)
 
 
 
