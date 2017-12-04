@@ -254,7 +254,6 @@ class dynamicKidney():
 						self.matches_dict[self.t] = self.matches
 					else:
 						ud_pairs[('B','AB')] += 1
-			# print(self.matches)
 		return (self.matches, self.matches_dict)
 
 	def find_steady_state(self):
@@ -269,7 +268,6 @@ class dynamicKidney():
 				end_time = sorted_times[i - 1]
 				end_time_index = i - 1
 				break
-		print(end_time)
 		# calculate first surplus (up to 1)
 		for i in range(end_time_index):
 			L = sorted_times[i]
@@ -284,9 +282,9 @@ class dynamicKidney():
 		end_time_index += 1
 		# end_time_index is currently next index after 1.0
 		while ((surplus > 765 or surplus < 755) and current_end_time < 2):
-			print ("Current End", current_end_time)
-			print ("Previous End", sorted_times[end_time_index])
-			print ("Current Start", sorted_times[current_start_index])
+			# print ("Current End", current_end_time)
+			# print ("Previous End", sorted_times[end_time_index])
+			# print ("Current Start", sorted_times[current_start_index])
 			# subtract 1
 			L = sorted_times[current_start_index - 1]
 			U = sorted_times[current_start_index]
@@ -300,14 +298,35 @@ class dynamicKidney():
 			# move interval
 			current_start_index += 1
 			current_end_time = 1 + sorted_times[current_start_index]
-			print ("Surplus", surplus)
-		print (sorted_times[current_start_index])
+			# print ("Surplus", surplus)
+		return (sorted_times[current_start_index], current_start_index)
+
+num_trials = 50
+trials_surplus = []
+# steady_state_times = []
+# num_arrivals = []
 
 mySim = dynamicKidney()
-mySim.empty_world_sim()
-mySim.find_steady_state()
+thresholds = [i for i in xrange(0, 4)]
+for threshold in thresholds:
+	mySim.mult_thresh = threshold
+	print ("Threshold: ", threshold)
+	for i in xrange(num_trials):
+		(matches_2, matches_dict_2) = mySim.mult_way_sim()
+		trials_surplus.append(mySim.calc_surplus())
+	print (np.mean(trials_surplus))
+	print (np.var(trials_surplus))	
 
-# num_trials = 50
+# for i in xrange(num_trials):
+# 	mySim.empty_world_sim()
+# 	result = mySim.find_steady_state()
+# 	steady_state_times.append(result[0])
+# 	num_arrivals.append(result[1])
+# print("Times Mean:", np.mean(steady_state_times))
+# print("Times Variance:", np.var(steady_state_times))
+# print("Arrivals Mean:", np.mean(num_arrivals))
+# print("Arrivals Variance:", np.var(num_arrivals))
+
 # trials_surplus = []
 
 # for i in xrange(num_trials):
